@@ -1,6 +1,6 @@
 #Social_Network_Ads.csv stiahnute zo stranky:
 #- https://www.kaggle.com/datasets/rakeshrau/social-network-ads
-data <- read.csv('resources/Social_Network_Ads.csv')
+data <- read.csv('src/resources/Social_Network_Ads.csv')
 data <- data[3:5]
 
 str(data)
@@ -44,23 +44,6 @@ test <- subset(data, split == FALSE)
 train[-3] <- scale(train[-3])
 test[-3] <- scale(test[-3])
 
-# install.packages('e1071')
-library(e1071)
-
-#pouzitie kernela: 'linear'
-#type: 'C-classification', pretoze chceme pouzit regresnu klasigikaciu
-classifier <- svm(formula = Purchased ~ .,
-                  data = train,
-                  type = 'C-classification',
-                  kernel = 'linear')
-
-#predpovedanie vysledkov na test
-predictionTest = predict(classifier, newdata = test[-3])
-
-#confusion matrix
-confusionMatrix = table(test[, 3], predictionTest)
-confusionMatrix
-
 # ak nie je ElemStatLearn este nainstalovane, tak:
 #   packageurl <- "https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz"
 #   install.packages(packageurl, repos=NULL, type="source")
@@ -74,7 +57,7 @@ set_visualisation <- function(set, name) {
   colnames(grid_set) = c('Age', 'EstimatedSalary')
   # this is the MAGIC of the background coloring
   # here we use the classifier to predict the result of each of each of the pixel bits noted above
-  y_gridL = predict(classifier, newdata = grid_set)
+  y_gridL = predict(classifierLinear, newdata = grid_set)
   # that's the end of the background
   # now we plat the actual data
   plot(set[, -3],
@@ -89,10 +72,22 @@ set_visualisation <- function(set, name) {
   points(set, pch = 21, bg = ifelse(set[, 3] == 1, 'green4', 'red3'))
 }
 
+# install.packages('e1071')
+library(e1071)
+
+#pouzitie kernela: 'linear'
+#type: 'C-classification', pretoze chceme pouzit regresnu klasifikaciu
+classifierLinear <- svm(formula = Purchased ~ .,
+                        data = train,
+                        type = 'C-classification',
+                        kernel = 'linear')
+
+linearPrediction <- predict(classifierLinear, newdata = test[-3])
+
+confusionMatrix <- table(test[, 3], linearPrediction)
+confusionMatrix
+
 #TRAIN SET VISUALISATION
 set_visualisation(train, 'SVM Linear Kernel (Train set)')
 #TRAIN SET VISUALISATION
 set_visualisation(test, 'SVM Linear Kernel (Test set)')
-
-
-
