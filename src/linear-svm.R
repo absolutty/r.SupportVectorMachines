@@ -85,6 +85,10 @@ classifierLinear <- svm(formula = Purchased ~ .,
 linearPrediction <- predict(classifierLinear, newdata = test[-3])
 
 confusionMatrix <- table(test[, 3], linearPrediction)
+library(caret)
+
+sensitivity(confusionMatrix)
+specificity(confusionMatrix)
 confusionMatrix
 
 #TRAIN SET VISUALISATION

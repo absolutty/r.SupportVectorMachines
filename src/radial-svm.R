@@ -85,6 +85,10 @@ classifierRadial <- svm(formula = Purchased ~ .,
 radialPrediction <- predict(classifierRadial, newdata = test[-3])
 
 confusionMatrix <- table(test[, 3], radialPrediction)
+library(caret)
+
+sensitivity(confusionMatrix)
+specificity(confusionMatrix)
 confusionMatrix
 
 #TRAIN SET VISUALISATION
