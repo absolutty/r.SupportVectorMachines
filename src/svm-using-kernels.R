@@ -47,17 +47,17 @@ test[-3] <- scale(test[-3])
 # ak nie je ElemStatLearn este nainstalovane, tak:
 #   packageurl <- "https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz"
 #   install.packages(packageurl, repos=NULL, type="source")
-set_visualisation <- function(set, name) {
+set_visualisation <- function(set, name, classifier) {
   library(ElemStatLearn)
   # this section creates the background region red/green. It does that by the 'by' which you can think of as the steps in python, so each 0.01 is interpreted as 0 or 1 and is either green or red. The -1 and +1 give us the space around the edges so the dots are not jammed
-  X1 <- seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-  X2 <- seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
-  grid_set <- expand.grid(X1, X2)
+  X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
+  X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
+  grid_set = expand.grid(X1, X2)
   # just giving a name to the X and Y
-  colnames(grid_set) <- c('Age', 'EstimatedSalary')
+  colnames(grid_set) = c('Age', 'EstimatedSalary')
   # this is the MAGIC of the background coloring
   # here we use the classifier to predict the result of each of each of the pixel bits noted above
-  y_gridL = predict(classifierRadial, newdata = grid_set)
+  y_gridL = predict(classifier, newdata = grid_set)
   # that's the end of the background
   # now we plat the actual data
   plot(set[, -3],
@@ -75,6 +75,29 @@ set_visualisation <- function(set, name) {
 # install.packages('e1071')
 library(e1071)
 
+#################################LINEAR SVM##########################################
+#pouzitie kernela: 'linear'
+#type: 'C-classification', pretoze chceme pouzit regresnu klasifikaciu
+classifierLinear <- svm(formula = Purchased ~ .,
+                        data = train,
+                        type = 'C-classification',
+                        kernel = 'linear')
+
+linearPrediction <- predict(classifierLinear, newdata = test[-3])
+
+linearCMR <- table(test[, 3], linearPrediction)
+library(caret)
+
+sensitivity(linearCMR) #0.8142857
+specificity(linearCMR) #0.7666667
+linearCMR
+
+#TRAIN SET VISUALISATION
+set_visualisation(train, 'SVM Linear Kernel (Train set)', classifierLinear)
+#TRAIN SET VISUALISATION
+set_visualisation(test, 'SVM Linear Kernel (Test set)', classifierLinear)
+
+#################################RADIAL SVM##########################################
 #pouzitie kernela: 'radial'
 #type: 'C-classification', pretoze chceme pouzit regresnu klasigikaciu
 classifierRadial <- svm(formula = Purchased ~ .,
@@ -84,14 +107,13 @@ classifierRadial <- svm(formula = Purchased ~ .,
 
 radialPrediction <- predict(classifierRadial, newdata = test[-3])
 
-confusionMatrix <- table(test[, 3], radialPrediction)
-library(caret)
+radialCMR <- table(test[, 3], radialPrediction)
 
-sensitivity(confusionMatrix)
-specificity(confusionMatrix)
-confusionMatrix
+sensitivity(radialCMR)#0.9354839
+specificity(radialCMR)#0.8421053
+radialCMR
 
 #TRAIN SET VISUALISATION
-set_visualisation(train, 'SVM Radial Kernel (Train set)')
+set_visualisation(train, 'SVM Radial Kernel (Train set)', classifierRadial)
 #TRAIN SET VISUALISATION
-set_visualisation(test, 'SVM Radial Kernel (Test set)')
+set_visualisation(test, 'SVM Radial Kernel (Test set)', classifierRadial)
